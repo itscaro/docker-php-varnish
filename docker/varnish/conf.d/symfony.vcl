@@ -28,8 +28,6 @@ sub vcl_backend_response {
         unset beresp.http.Surrogate-Control;
         set beresp.do_esi = true;
     }
-
-    //set beresp.ttl = 90s;
 }
 
 sub vcl_deliver {
