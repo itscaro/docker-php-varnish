@@ -12,8 +12,11 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - docker-compose -v
   - docker -v
-  - mkdir symfony
+  - pwd
 
 script:
   - docker-compose up -d
   - docker-compose ps
+  - docker network inspect dockerphpvarnish_front-tier
+  - docker network inspect dockerphpvarnish_back-tier
+  - curl http://localhost:80
