@@ -19,4 +19,5 @@ script:
   - docker-compose ps
   - docker network inspect dockerphpvarnish_front-tier
   - docker network inspect dockerphpvarnish_back-tier
-  - curl http://localhost:80
+  - curl http://localhost:80 || true
+  - cat /etc/hosts
