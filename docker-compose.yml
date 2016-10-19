@@ -1,0 +1,60 @@
+version: '2'
+
+services:
+  php:
+    image: php:7.1-fpm-alpine
+    volumes:
+      - '.:/workspace'
+    networks:
+      - back-tier
+
+  db:
+    depends_on:
+      - php
+    image: mariadb
+    links:
+      - php
+    networks:
+      - back-tier
+
+  nginx:
+    depends_on:
+      - php
+    image: nginx:alpine
+    links:
+      - php
+    #ports:
+    #  - 81:80
+    volumes:
+      - './web:/usr/share/nginx/html'
+      - './docker/nginx/conf.d:/etc/nginx/conf.d'
+      - './docker/nginx/bin:/scripts'
+    command: /bin/sh /scripts/run.sh
+    environment:
+      FPM_BACKEND: php
+    networks:
+      - back-tier
+
+  varnish:
+    depends_on:
+      - nginx
+    image: eeacms/varnish:debian
+    links:
+      - nginx
+    ports:
+      - 80:6081
+    volumes:
+      - './docker/varnish/conf.d:/etc/varnish/conf.d'
+    environment:
+      BACKENDS: nginx
+      BACKENDS_PORT: 80
+      BACKENDS_PROBE_INTERVAL: '60s'
+    networks:
+      - front-tier
+      - back-tier
+
+networks:
+  front-tier:
+    driver: bridge
+  back-tier:
+    driver: bridge
