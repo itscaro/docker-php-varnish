@@ -4,7 +4,7 @@ services:
   php:
     image: php:7.1-fpm-alpine
     volumes:
-      - '.:/workspace'
+      - .:/workspace
     networks:
       - back-tier
 
@@ -14,8 +14,13 @@ services:
     image: mariadb
     links:
       - php
+    volumes:
+      - ./data:/var/lib/mysql
     #ports:
     #  - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: dbpassword
+      #MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     networks:
       - back-tier
 
@@ -28,9 +33,11 @@ services:
     #ports:
     #  - 81:80
     volumes:
-      - './web:/usr/share/nginx/html'
-      - './docker/nginx/conf.d:/etc/nginx/conf.d'
-      - './docker/nginx/bin:/scripts'
+      - ./web:/usr/share/nginx/html:ro
+      - ./docker/nginx/bin:/scripts:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    volumes_from:
+     - php
     command: /bin/sh /scripts/run.sh
     environment:
       FPM_BACKEND: php
@@ -46,7 +53,7 @@ services:
     ports:
       - 80:6081
     volumes:
-      - './docker/varnish/conf.d:/etc/varnish/conf.d'
+      - ./docker/varnish/conf.d:/etc/varnish/conf.d
     environment:
       BACKENDS: nginx
       BACKENDS_PORT: 80
